@@ -5,6 +5,11 @@ html {
   padding: 0px;
 }
 
+#content > canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
 body {
   height: inherit;
   width: inherit;

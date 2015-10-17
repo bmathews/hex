@@ -1,43 +1,85 @@
 import utils from '../utils/hex';
+import HexTile from './HexTile';
 
 const GRID_SIZE_X = 20;
 const GRID_SIZE_Y = 20;
-const HEX_WIDTH = 20;
-const HEX_HEIGHT = 14;
+const HEX_WIDTH = 50;
+const HEX_HEIGHT = 86;
 const MAP_RADIUS = 6;
 
 class HexGrid extends Phaser.Group {
 
   constructor(game) {
     super(game);
-    this._createBoard();
+    this.position.x = this.game.world.centerX;
+    this.position.y = this.game.world.centerY;
     this.game.stage.addChild(this);
+    this.game.input.addMoveCallback(this._mouseMove.bind(this));
+    this.layout = utils.Layout(utils.layout_flat, utils.Point(HEX_WIDTH, HEX_WIDTH), utils.Point(0, 0));
+    this._createBoard();
+
+  }
+
+  _mouseMove (pointer, x, y) {
+    x -= this.position.x;
+    y -= this.position.y;
+    let { r, q } = utils.hex_round(utils.pixel_to_hex(this.layout, utils.Point(x, y)));
+    let tile = this.getTile(q, r);
+    if (tile) {
+      if (this.focusedTile) {
+        this.focusedTile.sprite.tint = this.focusedTile.color;
+      }
+      if (this.path) {
+        this.path.forEach((p) => {
+          let i = this.getTile(p.q, p.r);
+          i.sprite.tint = i.color; 
+        });
+      }
+      let lineStart = this.getTile(0, 0);
+      let lineEnd = tile;
+      let path = utils.hex_linedraw(utils.Hex(lineStart.q, lineStart.r, -lineStart.q-lineStart.r), utils.Hex(lineEnd.q, lineEnd.r,-lineEnd.q-lineEnd.r));
+      console.log(path);
+      path.forEach((p) => {
+        let i = this.getTile(p.q, p.r);
+        i.sprite.tint = 0x000000;
+      });
+
+      tile.sprite.tint = 0x000000;
+      this.focusedTile = tile;
+      this.path = path;
+    }
+  }
+
+  update () {
+    this.game.debug.inputInfo(16, 16);
+    if (this.focusedTile) {
+      this.game.debug.text(`Focused: r: ${this.focusedTile.r}, q: ${this.focusedTile.q}`, 16, 200);
+    }
   }
 
 
   /* Create a sprite from a tile */
 
   _createSprite(hex) {
-    let { x, y } = utils.hexToPixel(hex, HEX_WIDTH);
-    let sprite = this.create(x - HEX_WIDTH + this.game.world.centerX, y  - HEX_WIDTH + this.game.world.centerY, 'hex');
-    sprite.tint = hex.color;
+    let { x, y } = utils.hex_to_pixel(this.layout, hex);
+    let sprite = this.add(new HexTile(this.game, hex, x, y, 'hex'));
+    hex.sprite = sprite;
+    // sprite.tint = hex.color;
     return sprite;
   }
 
 
-  /* Get a hex tile at row, column */
+  /* Get a tile at column, row */
 
-  getHex (r, q) {
-    if (this.map[r] && this.map[r][q]) {
-      return this.map[r][q];
-    }
+  getTile (q, r) {
+    return this.map[q] && this.map[q][r];
   }
 
 
-  /* Set a hex tile at row, column*/
+  /* Set a tile at column, row */
 
-  setHex (r, q, hex) {
-    this.map[r][q] = hex;
+  setTile (q, r, hex) {
+    this.map[q][r] = hex;
   }
 
 
@@ -55,6 +97,22 @@ class HexGrid extends Phaser.Group {
         map[q][r] = { q, r, color: Math.random() * 0xffffff };
       }
     }
+    
+    return map;
+  }
+
+  _createRectangleMap () {
+    var map = {};
+    var map_height = 10;
+    var map_width = 5;
+
+    for (var r = 0; r < map_height; r++) {
+      var r_offset = Math.floor(r/2); // or r>>1
+      for (var q = -r_offset; q < map_width - r_offset; q++) {
+        if (!map[q]) { map[q] = {}; }
+        map[q][r] = { q, r, color: Math.random() * 0xffffff };
+      }
+    }
 
     return map;
   }
@@ -65,9 +123,9 @@ class HexGrid extends Phaser.Group {
   _createBoard() {
     let map = this.map = this._createHexagonMap();
 
-    for (let r in map) {
-      for (let q in map[r]) {
-        this._createSprite(map[r][q]);
+    for (let q in map) {
+      for (let r in map[q]) {
+        this._createSprite(map[q][r]);
       }
     }
   }
