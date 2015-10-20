@@ -37,14 +37,40 @@ class HexGrid extends Phaser.Group {
         this.path.forEach((p) => {
           let i = this.getTile(p.q, p.r);
           i.sprite.tint = 0xffffff; 
+          i.sprite.image.loadTexture(i.name, 0, false);
         });
       }
       let lineStart = this.getTile(0, 0);
       let lineEnd = tile;
       let path = utils.hex_linedraw(utils.Hex(lineStart.q, lineStart.r, -lineStart.q-lineStart.r), utils.Hex(lineEnd.q, lineEnd.r,-lineEnd.q-lineEnd.r));
-      path.forEach((p) => {
-        let i = this.getTile(p.q, p.r);
-        i.sprite.tint = 0xaabbdd;
+      path.forEach((p, i) => {
+        let t = this.getTile(p.q, p.r);
+        if (i !== path.length - 1) {
+          var prev = path[i+1];
+          var directionHex = utils.hex_subtract(p, prev);
+          var directionIndex;
+          utils.hex_directions.some((d, idx) => {
+            if (utils.hex_equals(d, directionHex)) {
+              switch (idx) {
+                case 1:
+                case 4:
+                  t.sprite.image.loadTexture('road-60-240', 0, false);
+                  break;
+                case 0:
+                case 3: 
+                  t.sprite.image.loadTexture('road-120-300', 0, false);
+                  break;
+                default:
+                  t.sprite.image.loadTexture('road', 0, false);
+                  break;
+              }
+              return true;
+            }
+          });
+        } else {
+          t.sprite.image.loadTexture('road', 0, false);
+        }
+        t.sprite.tint = 0xeeeeee; 
       });
       this.focusedTile = tile;
       log(`Focused: r: ${this.focusedTile.r}, q: ${this.focusedTile.q}`, 19);
@@ -56,10 +82,13 @@ class HexGrid extends Phaser.Group {
   /* Create a sprite from a tile */
 
   _createSprite(hex) {
+    var sprites = ['forest', 'water', 'mountain'];
+    var name = sprites[Math.floor(Math.random() * sprites.length)];
     let { x, y } = utils.hex_to_pixel(this.layout, hex);
-    let sprite = this.add(new HexTile(this.game, hex, x, y, 'hex'));
+    let sprite = new HexTile(this.game, hex, x, y, name);
+    this.add(sprite);
     hex.sprite = sprite;
-    // sprite.tint = hex.color;
+    hex.name = name;
     return sprite;
   }
 

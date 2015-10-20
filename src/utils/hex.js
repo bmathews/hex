@@ -193,6 +193,10 @@ function polygon_corners(layout, h)
     return corners;
 }
 
+function hex_equals(a, b) {
+    return a.q == b.q && a.s == b.s && a.r == b.r
+}
+
 
 
 
@@ -204,7 +208,7 @@ function complain(name) {
 
 function equal_hex(name, a, b)
 {
-    if (!(a.q == b.q && a.s == b.s && a.r == b.r))
+    if (!hex_equals(a, b))
     {
         complain(name);
     }
@@ -351,6 +355,7 @@ export default {
   hex_round,
   hex_lerp,
   hex_linedraw,
+  hex_equals,
 
   OffsetCoord,
   EVEN,
