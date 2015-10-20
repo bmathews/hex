@@ -18,7 +18,6 @@ class HexGrid extends Phaser.Group {
     this.game.input.addMoveCallback(this._mouseMove.bind(this));
     this.layout = utils.Layout(utils.layout_flat, utils.Point(HEX_WIDTH, HEX_WIDTH), utils.Point(0, 0));
     this._createBoard();
-
   }
 
   _mouseMove (pointer, x, y) {
@@ -37,7 +36,7 @@ class HexGrid extends Phaser.Group {
       if (this.path) {
         this.path.forEach((p) => {
           let i = this.getTile(p.q, p.r);
-          i.sprite.tint = i.color; 
+          i.sprite.tint = 0xffffff; 
         });
       }
       let lineStart = this.getTile(0, 0);
@@ -45,10 +44,8 @@ class HexGrid extends Phaser.Group {
       let path = utils.hex_linedraw(utils.Hex(lineStart.q, lineStart.r, -lineStart.q-lineStart.r), utils.Hex(lineEnd.q, lineEnd.r,-lineEnd.q-lineEnd.r));
       path.forEach((p) => {
         let i = this.getTile(p.q, p.r);
-        i.sprite.tint = 0x000000;
+        i.sprite.tint = 0xaabbdd;
       });
-
-      tile.sprite.tint = 0x000000;
       this.focusedTile = tile;
       log(`Focused: r: ${this.focusedTile.r}, q: ${this.focusedTile.q}`, 19);
       this.path = path;
