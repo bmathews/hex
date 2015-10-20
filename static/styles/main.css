@@ -8,6 +8,22 @@ html {
 #content > canvas {
   width: 100% !important;
   height: 100% !important;
+  backface-visibility: hidden;
+}
+
+#debug {
+  font-family: "Courier New";
+  font-size: 13px;
+  color: #fff;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 400px;
+  height: 300px;
+  overflow-x: auto;
+  backface-visibility: hidden;
+  white-space: pre;
+  background: #222;
 }
 
 body {

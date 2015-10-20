@@ -1,4 +1,5 @@
 import utils from '../utils/hex';
+import { log } from '../utils/debug';
 import HexTile from './HexTile';
 
 const GRID_SIZE_X = 20;
@@ -25,7 +26,11 @@ class HexGrid extends Phaser.Group {
     y -= this.position.y;
     let { r, q } = utils.hex_round(utils.pixel_to_hex(this.layout, utils.Point(x, y)));
     let tile = this.getTile(q, r);
+    log(`Mouse: x: ${x}, y: ${y}`, 18);
     if (tile) {
+      if (tile === this.focusedTile) {
+        return;
+      }
       if (this.focusedTile) {
         this.focusedTile.sprite.tint = this.focusedTile.color;
       }
@@ -38,7 +43,6 @@ class HexGrid extends Phaser.Group {
       let lineStart = this.getTile(0, 0);
       let lineEnd = tile;
       let path = utils.hex_linedraw(utils.Hex(lineStart.q, lineStart.r, -lineStart.q-lineStart.r), utils.Hex(lineEnd.q, lineEnd.r,-lineEnd.q-lineEnd.r));
-      console.log(path);
       path.forEach((p) => {
         let i = this.getTile(p.q, p.r);
         i.sprite.tint = 0x000000;
@@ -46,14 +50,8 @@ class HexGrid extends Phaser.Group {
 
       tile.sprite.tint = 0x000000;
       this.focusedTile = tile;
+      log(`Focused: r: ${this.focusedTile.r}, q: ${this.focusedTile.q}`, 19);
       this.path = path;
-    }
-  }
-
-  update () {
-    this.game.debug.inputInfo(16, 16);
-    if (this.focusedTile) {
-      this.game.debug.text(`Focused: r: ${this.focusedTile.r}, q: ${this.focusedTile.q}`, 16, 200);
     }
   }
 
@@ -97,7 +95,7 @@ class HexGrid extends Phaser.Group {
         map[q][r] = { q, r, color: Math.random() * 0xffffff };
       }
     }
-    
+
     return map;
   }
 
